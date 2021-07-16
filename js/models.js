@@ -106,7 +106,7 @@ class StoryList {
         story: newStory
       }
     });
-    console.log(response);
+    console.debug(response);
     return new Story(response.data.story);
 
   }
@@ -135,7 +135,7 @@ class StoryList {
         story: newData,}
     })
 
-    console.log(response);
+    console.debug(response);
     return new Story(response.data.story);
   }
 
@@ -274,9 +274,7 @@ class User {
       });
 
       let newUser = response.data.user;
-      console.log(response);
-      console.log(newUser);
-      console.log('Sync successful');
+      console.debug('Sync successful');
       return new User(
         {
           username: newUser.username,
@@ -305,7 +303,6 @@ class User {
     })
     const updatedUser = response.data.user
     this.favorites = updatedUser.favorites.map(s => new Story(s));
-    // To-Do: Make a method to update currentUser from a response from the API?
-    console.log(response.data.message);
+    console.debug(response.data.message);
   }
 }

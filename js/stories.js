@@ -95,10 +95,13 @@ async function submitNewStory(e){
     const $result = $('#submit-result');
     switch (err.response.status){
       case (400):
-        $result.text('A valid URL is required for each story.\n(E.g. http://example.com)');
+        $result.text('A valid URL is required for all stories.\n(E.g. http://example.com)');
+        break;
+      case (401):
+        $result.text('Error: You must be logged in to submit a story.');
         break;
       default:
-        $result.text('Could not reach API at this time.');
+        $result.text('Error: Could not reach API at this time.');
         break;
     }
     $result.show();
@@ -115,10 +118,23 @@ async function toggleUserFavorite(e){
   const storyID = $storyLi.attr('id');
   const favorited = $storyLi.attr('data-favorited') === 'true';
   let method = favorited ? 'delete' : 'post';
-  await currentUser.toggleFavorite(method, storyID);
-
-  // update CSS
-  updateFavoritedCSS($storyLi, favorited);
+  try {
+    await currentUser.toggleFavorite(method, storyID);
+    // update CSS
+    updateFavoritedCSS($storyLi, favorited);
+  } catch (err) {
+    switch (err.response.status){
+      case (401):
+        alert('You must be logged in to favorite stories');
+        break;
+      case (404):
+        alert('Error: The story you are trying to favorite could not be located.');
+        break;
+      default:
+        alert('Error: Could not reach API at this time.');
+        break;
+    }
+  }
 }
 
 function updateFavoritedCSS($li, favorited){
@@ -155,11 +171,27 @@ function putFavoritesOnPage() {
 async function deleteStoryClick(e){
   const $target = $(e.target);
   const storyId = $target.attr('data-id');
-  await storyList.deleteStory(currentUser, storyId);
-  storyList = await StoryList.getStories(); 
-  currentUser = await User.syncUserInfo(currentUser, currentUser.loginToken);
-
-  $(`#${storyId}`).remove();
+  try{
+    await storyList.deleteStory(currentUser, storyId);
+    storyList = await StoryList.getStories(); 
+    currentUser = await User.syncUserInfo(currentUser, currentUser.loginToken);
+    $(`#${storyId}`).remove();
+  } catch (err) {
+    switch (err.response.status){
+      case (404):
+        alert('Error: The story you are trying to delete could not be located.');
+        break;
+      case (403):
+        alert('Error: You do not have permission to delete that story.');
+        break;
+      case (401):
+        alert('Error: You must be logged in to delete your stories.');
+        break;
+      default:
+        alert('Error: Could not reach API at this time.');
+        break;
+    }
+  }
 }
 
 $allStoriesList.on('click', '.del', deleteStoryClick);
@@ -174,7 +206,6 @@ function editStoryClick(e){
 
 async function openEditForm(storyId){
   const story = await Story.getData(storyId);
-  console.log(story);
   const form = $editForm.get()[0];
   $editForm.attr('data-editId', storyId);
   form.title.value = story.title;
@@ -213,13 +244,13 @@ async function submitEditForm(e){
         $result.text('Error: You may only edit your own stories.');
         break;
       case (401):
-        $result.text('Error: You need to be logged in before editing stories.');
+        $result.text('Error: You must be logged in to edit your stories.');
         break;
       case (400):
-        $result.text('A valid URL is needed for all stories.');
+        $result.text('A valid URL is required for all stories.\n(E.g. http://example.com).');
         break;
       default:
-        $result.text('Could not reach the API at this time.');
+        $result.text('Error: Could not reach the API at this time.');
     }
     $result.show();
   }

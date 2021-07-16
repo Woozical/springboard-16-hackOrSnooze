@@ -58,10 +58,10 @@
   cursor: pointer;
 }
 
-.del{
+.del, .edit{
   cursor:pointer;
 }
 
-.del:hover{
+.del:hover, .edit:hover{
   color: rgb(45, 45, 45);
 }
