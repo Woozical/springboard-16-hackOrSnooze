@@ -1,7 +1,7 @@
 "use strict";
 
 const BASE_URL = "https://hack-or-snooze-v3.herokuapp.com";
-const timeout = 1;
+const timeout = 10000;
 
 /******************************************************************************
  * Story: a single story in the system
