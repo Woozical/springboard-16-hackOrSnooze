@@ -50,3 +50,26 @@ function putStoriesOnPage() {
 
   $allStoriesList.show();
 }
+
+// Retrieves data for story from submission form, post it to API, prepend response Story to local storyList memory
+async function submitNewStory(e){
+  e.preventDefault();
+  const storyData = {
+    title: $submitForm.get()[0].title.value,
+    author: $submitForm.get()[0].author.value,
+    url: $submitForm.get()[0].url.value
+  }
+  
+  let newStory = await storyList.addStory(currentUser, storyData);
+
+  // TO-DO, handle bad requests (Code 400 from server)
+
+  storyList.stories.unshift(newStory);
+  
+  // Update DOM
+  $submitForm.trigger('rest');
+  hidePageComponents();
+  putStoriesOnPage();
+}
+
+$submitForm.on('submit', submitNewStory)
