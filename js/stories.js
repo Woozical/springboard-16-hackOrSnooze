@@ -20,17 +20,28 @@ async function getAndShowStoriesOnStart() {
  */
 
 function generateStoryMarkup(story) {
-  // console.debug("generateStoryMarkup", story);
+  console.debug("generateStoryMarkup", story);
+
+  let favBtn, deleteBtn, favClass;
+
+  if (currentUser){
+    const favorited = isStoryFavorited(story.storyId);
+    const favSymbol = favorited ? '-' : '+';
+    favClass = favorited ? 'story-favorited' : '';
+    const favSymCSS = favorited ? 'favorite-icon-noHover' : 'favorite-icon';
+    deleteBtn = isStoryOwned(story.storyId) ? `<small class="del" id="${story.storyId}">(delete)</small>` : '';
+    favBtn = `<span class=" favSym ${favSymCSS}">${favSymbol}</span>`;
+  } else {
+    favClass = '';
+    deleteBtn = '';
+    favBtn = '';
+  }
 
   const hostName = story.getHostName();
-  const favorited = isStoryFavorited(story.storyId);
-  const favSymbol = favorited ? '-' : '+';
-  const favClass = favorited ? 'story-favorited' : '';
-  const favSymCSS = favorited ? 'favorite-icon-noHover' : 'favorite-icon';
-  const deleteBtn = isStoryOwned(story.storyId) ? `<small class="del" id="${story.storyId}">(delete)</small>` : '';
+
   return $(`
       <li id="${story.storyId}">
-        <span class=" favSym ${favSymCSS}">${favSymbol}</span>
+        ${favBtn}
         <a href="${story.url}" target="a_blank" class="story-link">
           ${story.title}
         </a>
@@ -82,10 +93,10 @@ async function submitNewStory(e){
   }
   
   let newStory = await storyList.addStory(currentUser, storyData);
-
   // TO-DO, handle bad requests (Code 400 from server)
   // Manually add the new story to local memory (saves on requests to API)
   storyList.stories.unshift(newStory);
+  currentUser.ownStories.push(newStory);
   
   // Update DOM
   $submitForm.trigger('reset');
@@ -139,8 +150,12 @@ function putFavoritesOnPage() {
   $allStoriesList.show();
 }
 
-function deleteStoryClick(e){
-  console.log('Baleeting:', e.target.id);
+async function deleteStoryClick(e){
+  await storyList.deleteStory(currentUser, e.target.id);
+  storyList = await StoryList.getStories(); 
+  currentUser = await User.syncUserInfo(currentUser, currentUser.loginToken);
+
+  $(`li[id="${e.target.id}"]`).remove();
 }
 
 $allStoriesList.on('click', '.del', deleteStoryClick);

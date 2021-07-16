@@ -74,7 +74,6 @@ class StoryList {
    */
 
   async addStory(user, newStory) {
-    // UNIMPLEMENTED: complete this function!
     const response = await axios({
       url: `${BASE_URL}/stories`,
       method: 'post',
@@ -88,6 +87,8 @@ class StoryList {
 
   }
 
+  // Sends a request to the API to delete the given story
+  // Returns the ID of the deleted story
   async deleteStory(user, storyId){
     const response = await axios({
       url: `${BASE_URL}/stories/${storyId}`,
@@ -97,8 +98,7 @@ class StoryList {
       }
     });
 
-    console.log(response.data.message);
-
+    return (response.data.story.storyId);
   }
 }
 
@@ -216,6 +216,34 @@ class User {
       console.error("loginViaStoredCredentials failed", err);
       return null;
     }
+  }
+
+  static async syncUserInfo(user, token){
+    try{
+      const response = await axios({
+        url: `${BASE_URL}/users/${user.username}`,
+        method: 'GET',
+        params: { token }
+      });
+
+      let newUser = response.data.user;
+      console.log(response);
+      console.log(newUser);
+      console.log('Sync successful');
+      return new User(
+        {
+          username: newUser.username,
+          name: newUser.name,
+          createdAt: newUser.createdAt,
+          favorites: newUser.favorites,
+          ownStories: newUser.stories
+        },
+        token
+      );
+      } catch (err) {
+        console.error('Synchronization failed', err);
+        return null;
+      }
   }
 
   // method - 'post' to add favorite, 'delete' to remove favoite
