@@ -22,17 +22,18 @@ async function getAndShowStoriesOnStart() {
 function generateStoryMarkup(story) {
   //console.debug("generateStoryMarkup", story);
 
-  let favBtn, deleteBtn, favClass, favorited;
+  let favBtn, deleteBtn, favClass, favorited, editBtn;
 
   if (currentUser){
     favorited = story.isFavoritedBy(currentUser);
+    const owned = story.isOwnedBy(currentUser);
     const favSymbol = favorited ? '-' : '+';
     const favSymCSS = favorited ? 'favorite-icon-noHover' : 'favorite-icon';
 
     favClass = favorited ? 'story-favorited' : '';
-    deleteBtn = story.isOwnedBy(currentUser) ? `<small class="del" id="${story.storyId}">(delete)</small>` : '';
+    deleteBtn = owned ? `<small class="del" data-id="${story.storyId}">(delete)</small>` : '';
     favBtn = `<span class=" favSym ${favSymCSS}">${favSymbol}</span>`;
-
+    editBtn = owned ? `<small class="edit" data-id="${story.storyId}">(edit)</small>` : '';
   } else {
     favorited = false;
     favClass = '';
@@ -50,7 +51,7 @@ function generateStoryMarkup(story) {
         </a>
         <small class="story-hostname">(${hostName})</small>
         <small class="story-author">by ${story.author}</small>
-        <small class="story-user">posted by ${story.username} ${deleteBtn}</small>
+        <small class="story-user">posted by ${story.username} ${editBtn} ${deleteBtn}</small>
       </li>
     `).addClass(favClass).attr('data-favorited', favorited.toString());
 }
@@ -94,7 +95,7 @@ async function submitNewStory(e){
     const $result = $('#submit-result');
     switch (err.response.status){
       case (400):
-        $result.text('A valid URL is required for each story.');
+        $result.text('A valid URL is required for each story.\n(E.g. http://example.com)');
         break;
       default:
         $result.text('Could not reach API at this time.');
@@ -152,11 +153,13 @@ function putFavoritesOnPage() {
 }
 
 async function deleteStoryClick(e){
-  await storyList.deleteStory(currentUser, e.target.id);
+  const $target = $(e.target);
+  const storyId = $target.attr('data-id');
+  await storyList.deleteStory(currentUser, storyId);
   storyList = await StoryList.getStories(); 
   currentUser = await User.syncUserInfo(currentUser, currentUser.loginToken);
 
-  $(`li[id="${e.target.id}"]`).remove();
+  $(`#${storyId}`).remove();
 }
 
 $allStoriesList.on('click', '.del', deleteStoryClick);
