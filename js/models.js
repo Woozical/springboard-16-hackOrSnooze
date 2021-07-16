@@ -204,4 +204,20 @@ class User {
       return null;
     }
   }
+
+  // method - 'post' to add favorite, 'delete' to remove favoite
+  async toggleFavorite(method, storyId){
+    const endpoint = `${BASE_URL}/users/${this.username}/favorites/${storyId}`;
+    const response = await axios({
+      url: endpoint,
+      method,
+      data: {
+        token : this.loginToken
+      }
+    })
+    const updatedUser = response.data.user
+    this.favorites = updatedUser.favorites.map(s => new Story(s));
+    // To-Do: Make a method to update currentUser from a response from the API?
+    console.log(response.data.message);
+  }
 }

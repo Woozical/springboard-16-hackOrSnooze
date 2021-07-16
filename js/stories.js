@@ -63,11 +63,11 @@ async function submitNewStory(e){
   let newStory = await storyList.addStory(currentUser, storyData);
 
   // TO-DO, handle bad requests (Code 400 from server)
-
+  // Manually add the new story to local memory (saves on requests to API)
   storyList.stories.unshift(newStory);
   
   // Update DOM
-  $submitForm.trigger('rest');
+  $submitForm.trigger('reset');
   hidePageComponents();
   putStoriesOnPage();
 }
