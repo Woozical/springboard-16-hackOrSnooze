@@ -33,7 +33,6 @@ function updateNavOnLogin() {
   $navLogin.hide();
   $navLogOut.show();
   $navUserProfile.text(`${currentUser.username}`).show();
-  $navUserStories.show();
   $navFavorites.show();
   $navSubmit.show();
 }
@@ -59,4 +58,4 @@ function navUserClick(evt){
   putUserStoriesOnPage('ownStories');
 }
 
-$navUserStories.on("click", navUserClick);
+$navUserProfile.on("click", navUserClick);
