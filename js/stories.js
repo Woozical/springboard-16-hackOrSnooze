@@ -7,7 +7,7 @@ let storyList;
 
 async function getAndShowStoriesOnStart() {
   storyList = await StoryList.getStories();
-  $storiesLoadingMsg.remove();
+  $storiesLoadingMsg.hide();
 
   putStoriesOnPage();
 }
@@ -22,7 +22,11 @@ async function getAndShowStoriesOnStart() {
 function generateStoryMarkup(story) {
   //console.debug("generateStoryMarkup", story);
 
-  let favBtn, deleteBtn, favClass, favorited, editBtn;
+  let favBtn = '';
+  let deleteBtn = '';
+  let favClass = '';
+  let favorited = false;
+  let editBtn = '';
 
   if (currentUser){
     favorited = story.isFavoritedBy(currentUser);
@@ -34,11 +38,6 @@ function generateStoryMarkup(story) {
     deleteBtn = owned ? `<small class="del" data-id="${story.storyId}">(delete)</small>` : '';
     favBtn = `<span class=" favSym ${favSymCSS}">${favSymbol}</span>`;
     editBtn = owned ? `<small class="edit" data-id="${story.storyId}">(edit)</small>` : '';
-  } else {
-    favorited = false;
-    favClass = '';
-    deleteBtn = '';
-    favBtn = '';
   }
 
   const hostName = story.getHostName();
