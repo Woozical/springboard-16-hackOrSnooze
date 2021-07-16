@@ -67,7 +67,7 @@ function putStoriesOnPage() {
     const $story = generateStoryMarkup(story);
     $allStoriesList.append($story);
   }
-
+  storyDisplay = STATE.all;
   $allStoriesList.show();
 }
 
@@ -163,12 +163,12 @@ $allStoriesList.on('click', '.favSym', toggleUserFavorite);
 function putUserStoriesOnPage(key) {
   console.debug("putUserStoriesOnPage", key);
   $allStoriesList.empty();
-
+  const favMode = (key === 'favorites');
   // Nothing favorited or created?
   if (currentUser[key].length < 1){
-    const verb = (key === 'favorites') ? 'favoriting' : 'creating';
+    const verb = favMode ? 'favoriting' : 'creating';
     const $notification = $(
-      `<b style="text-align: center">Try ${verb} some stories first!</b>`
+      `<b style="text-align: center">No stories to list... try ${verb} some!</b>`
     )
     $allStoriesList.append($notification);
   } else {
@@ -178,7 +178,7 @@ function putUserStoriesOnPage(key) {
       $allStoriesList.append($story);
     }
   }
-
+  storyDisplay = favMode ? STATE.fav : STATE.own;
   $allStoriesList.show();
 }
 
@@ -190,6 +190,12 @@ async function deleteStoryClick(e){
     storyList = await StoryList.getStories(); 
     currentUser = await User.syncUserInfo(currentUser, currentUser.loginToken);
     $(`#${storyId}`).remove();
+    if (storyDisplay === STATE.own && currentUser.ownStories.length === 0){
+      const $notification = $(
+        `<b style="text-align: center">No stories to list... try creating some!</b>`
+      )
+      $allStoriesList.append($notification);
+    }
   } catch (err) {
     let code;
     try {

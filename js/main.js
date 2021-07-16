@@ -19,6 +19,9 @@ const $navLogOut = $("#nav-logout");
 const $navSubmit = $("#nav-submit");
 const $navFavorites = $('#nav-favorites');
 
+const STATE = {all : 0, fav : 1, own: 2};
+let storyDisplay;
+
 /** To make it easier for individual components to show just themselves, this
  * is a useful function that hides pretty much everything on the page. After
  * calling this, individual components can re-show just what they want.
