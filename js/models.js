@@ -1,6 +1,7 @@
 "use strict";
 
 const BASE_URL = "https://hack-or-snooze-v3.herokuapp.com";
+const timeout = 1;
 
 /******************************************************************************
  * Story: a single story in the system
@@ -25,7 +26,7 @@ class Story {
     const response = await axios({
       url: `${BASE_URL}/stories/${id}`,
       method: 'GET',
-      timeout: 10000,
+      timeout
     }
     );
     return response.data.story;
@@ -81,6 +82,7 @@ class StoryList {
     const response = await axios({
       url: `${BASE_URL}/stories`,
       method: "GET",
+      timeout,
     });
 
     // turn plain old story objects from API into instances of Story class
@@ -101,6 +103,7 @@ class StoryList {
     const response = await axios({
       url: `${BASE_URL}/stories`,
       method: 'post',
+      timeout,
       data: {
         token: user.loginToken,
         story: newStory
@@ -117,6 +120,7 @@ class StoryList {
     const response = await axios({
       url: `${BASE_URL}/stories/${storyId}`,
       method: 'delete',
+      timeout,
       data: {
         token: user.loginToken
       }
@@ -130,6 +134,7 @@ class StoryList {
     const response = await axios({
       url: `${BASE_URL}/stories/${storyId}`,
       method: 'patch',
+      timeout,
       data: {
         token: user.loginToken,
         story: newData,}
@@ -191,6 +196,7 @@ class User {
     const response = await axios({
       url: `${BASE_URL}/signup`,
       method: "POST",
+      timeout,
       data: { user: { username, password, name } },
     });
 
@@ -218,6 +224,7 @@ class User {
     const response = await axios({
       url: `${BASE_URL}/login`,
       method: "POST",
+      timeout,
       data: { user: { username, password } },
     });
 
@@ -244,6 +251,7 @@ class User {
       const response = await axios({
         url: `${BASE_URL}/users/${username}`,
         method: "GET",
+        timeout,
         params: { token },
       });
 
@@ -270,6 +278,7 @@ class User {
       const response = await axios({
         url: `${BASE_URL}/users/${user.username}`,
         method: 'GET',
+        timeout,
         params: { token }
       });
 
@@ -297,6 +306,7 @@ class User {
     const response = await axios({
       url: endpoint,
       method,
+      timeout,
       data: {
         token : this.loginToken
       }

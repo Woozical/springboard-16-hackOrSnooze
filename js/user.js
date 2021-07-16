@@ -26,7 +26,13 @@ async function login(evt) {
     updateUIOnUserLogin();
   } catch (err) {
     const $result = $('#login-result');
-    switch(err.response.status){
+    let code;
+    try {
+      code = err.response.status;
+    } catch (e) {
+      code = null;
+    }
+    switch(code){
       case (404):
         $result.text('Login Failed: An account with that username does not exist.');
         break;

@@ -92,7 +92,13 @@ async function submitNewStory(e){
     putStoriesOnPage();
   } catch (err) {
     const $result = $('#submit-result');
-    switch (err.response.status){
+    let code;
+    try {
+      code = err.response.status;
+    } catch (e) {
+      code = null;
+    }
+    switch(code){
       case (400):
         $result.text('A valid URL is required for all stories.\n(E.g. http://example.com)');
         break;
@@ -122,7 +128,13 @@ async function toggleUserFavorite(e){
     // update CSS
     updateFavoritedCSS($storyLi, favorited);
   } catch (err) {
-    switch (err.response.status){
+    let code;
+    try {
+      code = err.response.status;
+    } catch (e) {
+      code = null;
+    }
+    switch(code){
       case (401):
         alert('You must be logged in to favorite stories');
         break;
@@ -176,7 +188,13 @@ async function deleteStoryClick(e){
     currentUser = await User.syncUserInfo(currentUser, currentUser.loginToken);
     $(`#${storyId}`).remove();
   } catch (err) {
-    switch (err.response.status){
+    let code;
+    try {
+      code = err.response.status;
+    } catch (e) {
+      code = null;
+    }
+    switch(code){
       case (404):
         alert('Error: The story you are trying to delete could not be located.');
         break;
@@ -234,8 +252,13 @@ async function submitEditForm(e){
     putStoriesOnPage();
   } catch (err) {
     const $result = $('#edit-result');
-
-    switch (err.response.status){
+    let code;
+    try {
+      code = err.response.status;
+    } catch (e) {
+      code = null;
+    }
+    switch(code){
       case (404):
         $result.text('Error: The story you are trying to edit could not be located.');
         break;
