@@ -33,6 +33,7 @@ function updateNavOnLogin() {
   $navLogin.hide();
   $navLogOut.show();
   $navUserProfile.text(`${currentUser.username}`).show();
+  $navUserStories.show();
   $navFavorites.show();
   $navSubmit.show();
 }
@@ -48,6 +49,14 @@ $navSubmit.on("click", navSubmitClick);
 function navFavoriteClick(evt){
   console.debug("navFavoriteClick", evt);
   hidePageComponents();
-  putFavoritesOnPage();
+  putUserStoriesOnPage('favorites');
 }
 $navFavorites.on("click", navFavoriteClick);
+
+function navUserClick(evt){
+  console.debug("navUserClick", evt);
+  hidePageComponents();
+  putUserStoriesOnPage('ownStories');
+}
+
+$navUserStories.on("click", navUserClick);

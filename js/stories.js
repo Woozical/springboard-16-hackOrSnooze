@@ -158,19 +158,22 @@ function updateFavoritedCSS($li, favorited){
 
 $allStoriesList.on('click', '.favSym', toggleUserFavorite);
 
-function putFavoritesOnPage() {
-  console.debug("putFavoritesOnPage");
+// Displays the favorited or owned stories of the currentUser object
+// key is a string that must equal 'favorites' or 'ownStories'
+function putUserStoriesOnPage(key) {
+  console.debug("putUserStoriesOnPage", key);
   $allStoriesList.empty();
 
-  // Nothing favorited?
-  if (currentUser.favorites.length < 1){
+  // Nothing favorited or created?
+  if (currentUser[key].length < 1){
+    const verb = (key === 'favorites') ? 'favoriting' : 'creating';
     const $notification = $(
-      '<b style="text-align: center">Try favoriting some stories first!</b>'
+      `<b style="text-align: center">Try ${verb} some stories first!</b>`
     )
     $allStoriesList.append($notification);
   } else {
-    // loop through all stories in the currentUser's favorites and generate HTML for them
-    for (let story of currentUser.favorites){
+    // loop through all stories in the currentUser's favorites/ownStories and generate HTML for them
+    for (let story of currentUser[key]){
       const $story = generateStoryMarkup(story);
       $allStoriesList.append($story);
     }
