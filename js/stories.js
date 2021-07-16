@@ -23,8 +23,10 @@ function generateStoryMarkup(story) {
   // console.debug("generateStoryMarkup", story);
 
   const hostName = story.getHostName();
+  const favSymbol = isStoryFavorited(story.storyId) ? '-' : '+';
   return $(`
       <li id="${story.storyId}">
+        <span class="favorite-icon">${favSymbol}</span>
         <a href="${story.url}" target="a_blank" class="story-link">
           ${story.title}
         </a>
@@ -33,6 +35,13 @@ function generateStoryMarkup(story) {
         <small class="story-user">posted by ${story.username}</small>
       </li>
     `);
+}
+
+function isStoryFavorited(storyId){
+  for (let favStory of currentUser.favorites){
+    if (favStory.storyId === storyId) return true;
+  }
+  return false;
 }
 
 /** Gets list of stories from server, generates their HTML, and puts on page. */
@@ -73,3 +82,19 @@ async function submitNewStory(e){
 }
 
 $submitForm.on('submit', submitNewStory)
+
+
+async function toggleUserFavorite(e){
+  e.preventDefault();
+  const $storyLi = $(e.target.parentElement);
+  const storyID = $storyLi.attr('id');
+  const favorited = isStoryFavorited(storyID) 
+  let method = favorited ? 'delete' : 'post';
+  let newSymbol = favorited ? '+' : '-';
+  await currentUser.toggleFavorite(method, storyID);
+  e.target.innerText = newSymbol;
+}
+
+$allStoriesList.on('click', '.favorite-icon', function(e){
+  toggleUserFavorite(e);
+})
