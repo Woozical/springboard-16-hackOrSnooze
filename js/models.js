@@ -21,12 +21,20 @@ class Story {
     this.createdAt = createdAt;
   }
 
+  static async getData(id) {
+    const response = await axios({
+      url: `${BASE_URL}/stories/${id}`,
+      method: 'GET',
+      timeout: 10000,
+    }
+    );
+    return response.data.story;
+  }
+
   /** Parses hostname out of URL and returns it. */
 
   getHostName() {
-    // UNIMPLEMENTED: complete this function!
     const parseUrl = new URL(this.url);
-
     return parseUrl.hostname;
   }
 
@@ -116,6 +124,29 @@ class StoryList {
 
     return (response.data.story.storyId);
   }
+
+  // Sends a request to the API to edit the given story
+  async editStory(user, storyId, newData){
+    const response = await axios({
+      url: `${BASE_URL}/stories/${storyId}`,
+      method: 'patch',
+      data: {
+        token: user.loginToken,
+        story: newData,}
+    })
+
+    console.log(response);
+    return new Story(response.data.story);
+  }
+
+  getStoryIndexById(id){
+    return this.stories.findIndex(
+      (story) => {
+        return story.storyId === id;
+      }
+    )
+  }
+
 }
 
 

@@ -163,3 +163,66 @@ async function deleteStoryClick(e){
 }
 
 $allStoriesList.on('click', '.del', deleteStoryClick);
+
+function editStoryClick(e){
+  const $target = $(e.target);
+  const storyId = $target.attr('data-id');
+  hidePageComponents();
+  openEditForm(storyId);
+  e.preventDefault();
+}
+
+async function openEditForm(storyId){
+  const story = await Story.getData(storyId);
+  console.log(story);
+  const form = $editForm.get()[0];
+  $editForm.attr('data-editId', storyId);
+  form.title.value = story.title;
+  form.author.value = story.author;
+  form.url.value = story.url;
+  $editForm.show();
+}
+
+$allStoriesList.on('click', '.edit', editStoryClick);
+
+async function submitEditForm(e){
+  e.preventDefault();
+  const form = $editForm.get()[0];
+  const storyId = $editForm.attr('data-editId');
+  const storyData = {
+    title : form.title.value,
+    author : form.author.value,
+    url :form.url.value,
+  };
+  try{
+    const editedStory = await storyList.editStory(currentUser, storyId, storyData);
+    const editIdx = storyList.getStoryIndexById(storyId);
+    storyList.stories[editIdx] = editedStory;
+    // Update DOM
+    $editForm.trigger('reset');
+    hidePageComponents();
+    putStoriesOnPage();
+  } catch (err) {
+    const $result = $('#edit-result');
+
+    switch (err.response.status){
+      case (404):
+        $result.text('Error: The story you are trying to edit could not be located.');
+        break;
+      case (403):
+        $result.text('Error: You may only edit your own stories.');
+        break;
+      case (401):
+        $result.text('Error: You need to be logged in before editing stories.');
+        break;
+      case (400):
+        $result.text('A valid URL is needed for all stories.');
+        break;
+      default:
+        $result.text('Could not reach the API at this time.');
+    }
+    $result.show();
+  }
+}
+
+$editForm.on('submit', submitEditForm);
