@@ -25,7 +25,23 @@ class Story {
 
   getHostName() {
     // UNIMPLEMENTED: complete this function!
-    return "hostname.com";
+    const parseUrl = new URL(this.url);
+
+    return parseUrl.hostname;
+  }
+
+  isFavoritedBy(user){
+    for (let favStory of user.favorites){
+      if (favStory.storyId === this.storyId) return true;
+    }
+    return false;
+  }
+
+  isOwnedBy(user){
+    for (let ownStory of user.ownStories){
+      if (ownStory.storyId === this.storyId) return true;
+    }
+    return false;
   }
 }
 
