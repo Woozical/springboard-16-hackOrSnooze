@@ -19,12 +19,26 @@ async function login(evt) {
 
   // User.login retrieves user info from API and returns User instance
   // which we'll make the globally-available, logged-in user.
-  currentUser = await User.login(username, password);
-
-  $loginForm.trigger("reset");
-
-  saveUserCredentialsInLocalStorage();
-  updateUIOnUserLogin();
+  try{
+    currentUser = await User.login(username, password);
+    $loginForm.trigger("reset");
+    saveUserCredentialsInLocalStorage();
+    updateUIOnUserLogin();
+  } catch (err) {
+    const $result = $('#login-result');
+    switch(err.response.status){
+      case (404):
+        $result.text('Login Failed: An account with that username does not exist.');
+        break;
+      case (401):
+        $result.text('Login Failed: Incorrect Password');
+        break;
+      default:
+        $result.text('Login Failed: Could not reach API');
+    }
+    $('#login-password').val('');
+    $result.show();
+  }
 }
 
 $loginForm.on("submit", login);
@@ -41,12 +55,24 @@ async function signup(evt) {
 
   // User.signup retrieves user info from API and returns User instance
   // which we'll make the globally-available, logged-in user.
-  currentUser = await User.signup(username, password, name);
-
-  saveUserCredentialsInLocalStorage();
-  updateUIOnUserLogin();
-
-  $signupForm.trigger("reset");
+  try{
+    currentUser = await User.signup(username, password, name);
+    
+    saveUserCredentialsInLocalStorage();
+    updateUIOnUserLogin();
+    
+    $signupForm.trigger("reset");
+  } catch (err) {
+    const $result = $('#signup-result');
+    switch (err.response.status){
+      case(409):
+        $result.text('An account with that username already exists.')
+        break;
+      default:
+        $result.text('Could not reach API at this time.')
+    }
+    $result.show();
+  }
 }
 
 $signupForm.on("submit", signup);

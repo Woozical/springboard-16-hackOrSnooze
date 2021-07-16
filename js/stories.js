@@ -80,17 +80,28 @@ async function submitNewStory(e){
     author: $submitForm.get()[0].author.value,
     url: $submitForm.get()[0].url.value
   }
-  
-  let newStory = await storyList.addStory(currentUser, storyData);
-  // TO-DO, handle bad requests (Code 400 from server)
-  // Manually add the new story to local memory (saves on requests to API)
-  storyList.stories.unshift(newStory);
-  currentUser.ownStories.push(newStory);
-  
-  // Update DOM
-  $submitForm.trigger('reset');
-  hidePageComponents();
-  putStoriesOnPage();
+  try{
+    let newStory = await storyList.addStory(currentUser, storyData);
+    // TO-DO, handle bad requests (Code 400 from server)
+    // Manually add the new story to local memory (saves on requests to API)
+    storyList.stories.unshift(newStory);
+    currentUser.ownStories.push(newStory);
+    // Update DOM
+    $submitForm.trigger('reset');
+    hidePageComponents();
+    putStoriesOnPage();
+  } catch (err) {
+    const $result = $('#submit-result');
+    switch (err.response.status){
+      case (400):
+        $result.text('A valid URL is required for each story.');
+        break;
+      default:
+        $result.text('Could not reach API at this time.');
+        break;
+    }
+    $result.show();
+  }
 }
 
 $submitForm.on('submit', submitNewStory)
