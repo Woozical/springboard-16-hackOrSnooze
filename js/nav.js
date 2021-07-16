@@ -42,3 +42,10 @@ function navSubmitClick(evt){
   $submitForm.show();
 }
 $navSubmit.on("click", navSubmitClick);
+
+function navFavoriteClick(evt){
+  console.debug("navFavoriteClick", evt);
+  hidePageComponents();
+  putFavoritesOnPage();
+}
+$navFavorites.on("click", navFavoriteClick);

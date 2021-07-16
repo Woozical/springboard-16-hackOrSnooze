@@ -23,23 +23,34 @@ function generateStoryMarkup(story) {
   // console.debug("generateStoryMarkup", story);
 
   const hostName = story.getHostName();
-  const favSymbol = isStoryFavorited(story.storyId) ? '-' : '+';
+  const favorited = isStoryFavorited(story.storyId);
+  const favSymbol = favorited ? '-' : '+';
+  const favClass = favorited ? 'story-favorited' : '';
+  const favSymCSS = favorited ? 'favorite-icon-noHover' : 'favorite-icon';
+  const deleteBtn = isStoryOwned(story.storyId) ? `<small class="del" id="${story.storyId}">(delete)</small>` : '';
   return $(`
       <li id="${story.storyId}">
-        <span class="favorite-icon">${favSymbol}</span>
+        <span class=" favSym ${favSymCSS}">${favSymbol}</span>
         <a href="${story.url}" target="a_blank" class="story-link">
           ${story.title}
         </a>
         <small class="story-hostname">(${hostName})</small>
         <small class="story-author">by ${story.author}</small>
-        <small class="story-user">posted by ${story.username}</small>
+        <small class="story-user">posted by ${story.username} ${deleteBtn}</small>
       </li>
-    `);
+    `).addClass(favClass);
 }
 
 function isStoryFavorited(storyId){
   for (let favStory of currentUser.favorites){
     if (favStory.storyId === storyId) return true;
+  }
+  return false;
+}
+
+function isStoryOwned(storyId){
+  for (let story of currentUser.ownStories){
+    if (story.storyId === storyId) return true;
   }
   return false;
 }
@@ -62,6 +73,7 @@ function putStoriesOnPage() {
 
 // Retrieves data for story from submission form, post it to API, prepend response Story to local storyList memory
 async function submitNewStory(e){
+  console.debug("submitNewStory");
   e.preventDefault();
   const storyData = {
     title: $submitForm.get()[0].title.value,
@@ -85,16 +97,50 @@ $submitForm.on('submit', submitNewStory)
 
 
 async function toggleUserFavorite(e){
+  console.debug("toggleUserFavorite");
   e.preventDefault();
   const $storyLi = $(e.target.parentElement);
   const storyID = $storyLi.attr('id');
   const favorited = isStoryFavorited(storyID) 
   let method = favorited ? 'delete' : 'post';
-  let newSymbol = favorited ? '+' : '-';
   await currentUser.toggleFavorite(method, storyID);
-  e.target.innerText = newSymbol;
+
+  // update CSS
+  updateFavoritedCSS($storyLi, favorited);
 }
 
-$allStoriesList.on('click', '.favorite-icon', function(e){
-  toggleUserFavorite(e);
-})
+function updateFavoritedCSS($li, favorited){
+  const $favSymbol = $li.children('span');
+  let newSymbol = favorited ? '+' : '-';
+  $favSymbol.toggleClass(['favorite-icon', 'favorite-icon-noHover']).text(newSymbol);
+  $li.toggleClass('story-favorited');
+}
+
+$allStoriesList.on('click', '.favSym', toggleUserFavorite);
+
+function putFavoritesOnPage() {
+  console.debug("putFavoritesOnPage");
+  $allStoriesList.empty();
+
+  // Nothing favorited?
+  if (currentUser.favorites.length < 1){
+    const $notification = $(
+      '<b style="text-align: center">Try favoriting some stories first!</b>'
+    )
+    $allStoriesList.append($notification);
+  } else {
+    // loop through all stories in the currentUser's favorites and generate HTML for them
+    for (let story of currentUser.favorites){
+      const $story = generateStoryMarkup(story);
+      $allStoriesList.append($story);
+    }
+  }
+
+  $allStoriesList.show();
+}
+
+function deleteStoryClick(e){
+  console.log('Baleeting:', e.target.id);
+}
+
+$allStoriesList.on('click', '.del', deleteStoryClick);

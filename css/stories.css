@@ -38,6 +38,11 @@
   display: block;
 }
 
+.story-favorited{
+  background-color: rgb(255, 166, 0, 0.15);
+  outline: 1px solid rgb(255,166,0,0.65);
+}
+
 .favorite-icon{
   padding: 5px;
   cursor:pointer;
@@ -46,4 +51,17 @@
 .favorite-icon:hover{
   outline: 1px solid rgba(245, 151, 37, 0.7);
   background-color: #ecec0e50
+}
+
+.favorite-icon-noHover{
+  padding: 5px;
+  cursor: pointer;
+}
+
+.del{
+  cursor:pointer;
+}
+
+.del:hover{
+  color: rgb(45, 45, 45);
 }

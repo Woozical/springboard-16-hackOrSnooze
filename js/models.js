@@ -87,6 +87,19 @@ class StoryList {
     return new Story(response.data.story);
 
   }
+
+  async deleteStory(user, storyId){
+    const response = await axios({
+      url: `${BASE_URL}/stories/${storyId}`,
+      method: 'delete',
+      data: {
+        token: user.loginToken
+      }
+    });
+
+    console.log(response.data.message);
+
+  }
 }
 
 
