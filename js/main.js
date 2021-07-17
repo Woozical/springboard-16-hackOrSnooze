@@ -18,6 +18,11 @@ const $navLogOut = $("#nav-logout");
 const $navSubmit = $("#nav-submit");
 const $navFavorites = $('#nav-favorites');
 
+// State and variable used to hold memory of the current list of stories being displayed
+// Used to return to previous content after submitting some forms
+// all: stories from storyList.stories
+// fav: stories from currentUser.favorites
+// own: stories from currentUser.ownStories
 const STATE = {all : 0, fav : 1, own: 2};
 let storyDisplay;
 

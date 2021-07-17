@@ -37,6 +37,7 @@ function updateNavOnLogin() {
   $navSubmit.show();
 }
 
+// Open the new story submission form when clicking "submit"
 function navSubmitClick(evt){
   console.debug("navSubmitClick", evt);
   hidePageComponents();
@@ -44,14 +45,14 @@ function navSubmitClick(evt){
   $submitForm.show();
 }
 $navSubmit.on("click", navSubmitClick);
-
+// Display the currentUser's favorites in the list of stories
 function navFavoriteClick(evt){
   console.debug("navFavoriteClick", evt);
   hidePageComponents();
   putUserStoriesOnPage('favorites');
 }
 $navFavorites.on("click", navFavoriteClick);
-
+// Display the currentUser's own stories when clicking on their profile name
 function navUserClick(evt){
   console.debug("navUserClick", evt);
   hidePageComponents();

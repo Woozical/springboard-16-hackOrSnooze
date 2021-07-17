@@ -27,16 +27,21 @@ function generateStoryMarkup(story) {
   let favClass = '';
   let favorited = false;
   let editBtn = '';
-
+  // Mark up varies on if the user is logged in, and if that story's relation to the user
   if (currentUser){
     favorited = story.isFavoritedBy(currentUser);
     const owned = story.isOwnedBy(currentUser);
+    // Change favorite button based on current favorite status
     const favSymbol = favorited ? '-' : '+';
     const favSymCSS = favorited ? 'favorite-icon-noHover' : 'favorite-icon';
 
+    // Highlight the entire entry if favorited
     favClass = favorited ? 'story-favorited' : '';
+    // Append a delete button if the story is one of the user's
     deleteBtn = owned ? `<small class="del" data-id="${story.storyId}">(delete)</small>` : '';
+    // Append a favorite toggle button if logged in
     favBtn = `<span class=" favSym ${favSymCSS}">${favSymbol}</span>`;
+    // Append a edit button if the story is one of the user's
     editBtn = owned ? `<small class="edit" data-id="${story.storyId}">(edit)</small>` : '';
   }
 
@@ -82,7 +87,6 @@ async function submitNewStory(e){
   }
   try{
     let newStory = await storyList.addStory(currentUser, storyData);
-    // TO-DO, handle bad requests (Code 400 from server)
     // Manually add the new story to local memory (saves on requests to API)
     storyList.stories.unshift(newStory);
     currentUser.ownStories.push(newStory);
@@ -96,6 +100,7 @@ async function submitNewStory(e){
       default:
         putStoriesOnPage();
     }
+  // Error Handling
   } catch (err) {
     const $result = $('#submit-result');
     let code;
@@ -119,9 +124,7 @@ async function submitNewStory(e){
   }
 }
 
-$submitForm.on('submit', submitNewStory)
-
-
+// Adds/Removes clicked story element to the user's favorites list
 async function toggleUserFavorite(e){
   console.debug("toggleUserFavorite");
   e.preventDefault();
@@ -153,7 +156,7 @@ async function toggleUserFavorite(e){
     }
   }
 }
-
+// For use in favorite click handler
 function updateFavoritedCSS($li, favorited){
   const $favSymbol = $li.children('span');
   let newSymbol = favorited ? '+' : '-';
@@ -161,8 +164,6 @@ function updateFavoritedCSS($li, favorited){
   $li.toggleClass('story-favorited');
   $li.attr('data-favorited', (!favorited).toString());
 }
-
-$allStoriesList.on('click', '.favSym', toggleUserFavorite);
 
 // Displays the favorited or owned stories of the currentUser object
 // key is a string that must equal 'favorites' or 'ownStories'
@@ -188,20 +189,24 @@ function putUserStoriesOnPage(key) {
   $allStoriesList.show();
 }
 
+// Click handler for deleting a user's own story
 async function deleteStoryClick(e){
   const $target = $(e.target);
   const storyId = $target.attr('data-id');
   try{
+    // Delete and sync local memory with API
     await storyList.deleteStory(currentUser, storyId);
     storyList = await StoryList.getStories(); 
     currentUser = await User.syncUserInfo(currentUser);
     $(`#${storyId}`).remove();
+    // Notification is user deletes all of their stories while viewing their own story list
     if (storyDisplay === STATE.own && currentUser.ownStories.length === 0){
       const $notification = $(
         `<b style="text-align: center">No stories to list... try creating some!</b>`
       )
       $allStoriesList.append($notification);
     }
+  // Error handling
   } catch (err) {
     let code;
     try {
@@ -226,8 +231,7 @@ async function deleteStoryClick(e){
   }
 }
 
-$allStoriesList.on('click', '.del', deleteStoryClick);
-
+// Click handler for clicking on the edit story button
 function editStoryClick(e){
   const $target = $(e.target);
   const storyId = $target.attr('data-id');
@@ -236,7 +240,8 @@ function editStoryClick(e){
   e.preventDefault();
 }
 
-async function openEditForm(storyId){
+// Displays the edit form and populates its field with info about the clicked story.
+function openEditForm(storyId){
   const story = storyList.stories[storyList.getStoryIndexById(storyId)];
   const form = $editForm.get()[0];
   $editForm.attr('data-editId', storyId);
@@ -246,11 +251,11 @@ async function openEditForm(storyId){
   $editForm.show();
 }
 
-$allStoriesList.on('click', '.edit', editStoryClick);
-
+// Submit handler for story edit form
 async function submitEditForm(e){
   e.preventDefault();
-  const form = $editForm.get()[0];
+  // Retrieve data from form
+  const form = $editForm.get()[0]; // Convert to HTMLElement for shorter syntax in accessing input fields
   const storyId = $editForm.attr('data-editId');
   const storyData = {
     title : form.title.value,
@@ -260,31 +265,25 @@ async function submitEditForm(e){
 
   try{
     const editedStory = await storyList.editStory(currentUser, storyId, storyData);
+
+    // Find and replace old story in local memory of storyList
     const editIdx = storyList.getStoryIndexById(storyId);
     const oldStory = storyList.stories[editIdx];
     storyList.stories[editIdx] = editedStory;
-    console.log(oldStory);
     // Find and replace old story in local memory of owned stories
-    console.log('Searching owned')
     const ownEditIdx = currentUser.ownStories.findIndex(
       (story) => {
-        console.log(story.storyId, oldStory.storyId);
         return (story.storyId === oldStory.storyId);
       }
     );
-    console.log('Index:', ownEditIdx);
     currentUser.ownStories[ownEditIdx] = editedStory;
-
-    // Find and replace old story in local memory of favorited stories
+    // Find and replace old story in local memory of favorited stories (if favorited)
     if (oldStory.isFavoritedBy(currentUser)){
-      console.log('Searching favorited')
       const favEditIdx = currentUser.favorites.findIndex(
         (story) => {
-          console.log(story.storyId, oldStory.storyId);
           return (story.storyId === oldStory.storyId);
         }
       );
-      console.log('Index:', favEditIdx);
       currentUser.favorites[favEditIdx] = editedStory;
     }
 
@@ -329,5 +328,9 @@ async function submitEditForm(e){
     $result.show();
   }
 }
-
+// Add Event Handlers
 $editForm.on('submit', submitEditForm);
+$submitForm.on('submit', submitNewStory);
+$allStoriesList.on('click', '.edit', editStoryClick);
+$allStoriesList.on('click', '.del', deleteStoryClick);
+$allStoriesList.on('click', '.favSym', toggleUserFavorite);

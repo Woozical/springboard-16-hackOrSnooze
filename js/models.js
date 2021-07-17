@@ -1,7 +1,7 @@
 "use strict";
 
 const BASE_URL = "https://hack-or-snooze-v3.herokuapp.com";
-const timeout = 10000;
+const timeout = 10000; // Global timeout of 10 seconds for all requests
 
 /******************************************************************************
  * Story: a single story in the system
@@ -22,6 +22,8 @@ class Story {
     this.createdAt = createdAt;
   }
 
+  // Makes a request to the API for data about a specific story
+  // Note that this returns a generic OBJ {} and should be converted to a new Story() if saved.
   static async getData(id) {
     const response = await axios({
       url: `${BASE_URL}/stories/${id}`,
@@ -33,12 +35,12 @@ class Story {
   }
 
   /** Parses hostname out of URL and returns it. */
-
   getHostName() {
     const parseUrl = new URL(this.url);
     return parseUrl.hostname;
   }
 
+  // Checks to see if this story exists in the favorites list of the passed in user (currentUser)
   isFavoritedBy(user){
     for (let favStory of user.favorites){
       if (favStory.storyId === this.storyId) return true;
@@ -46,6 +48,7 @@ class Story {
     return false;
   }
 
+  // Checks to see if this story exists in the ownStories list of the passed in user (currentUser)
   isOwnedBy(user){
     for (let ownStory of user.ownStories){
       if (ownStory.storyId === this.storyId) return true;
@@ -130,6 +133,7 @@ class StoryList {
   }
 
   // Sends a request to the API to edit the given story
+  // Returns the edited version of that story as a Story instance
   async editStory(user, storyId, newData){
     const response = await axios({
       url: `${BASE_URL}/stories/${storyId}`,
@@ -273,6 +277,8 @@ class User {
     }
   }
 
+  // Makes a request to the API for up-to-date information on the current user
+  // Returns a new User instance with the updated information
   static async syncUserInfo(user){
     try{
       const response = await axios({
@@ -300,7 +306,8 @@ class User {
       }
   }
 
-  // method - 'post' to add favorite, 'delete' to remove favoite
+  // Makes a request to the API to add/remove a story from the user's favorites list
+  // method, string - 'post' to add favorite, 'delete' to remove favoite
   async toggleFavorite(method, storyId){
     const endpoint = `${BASE_URL}/users/${this.username}/favorites/${storyId}`;
     const response = await axios({
@@ -312,6 +319,7 @@ class User {
       }
     })
     const updatedUser = response.data.user
+    // Update local memory
     this.favorites = updatedUser.favorites.map(s => new Story(s));
     console.debug(response.data.message);
   }
