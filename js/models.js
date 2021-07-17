@@ -273,13 +273,13 @@ class User {
     }
   }
 
-  static async syncUserInfo(user, token){
+  static async syncUserInfo(user){
     try{
       const response = await axios({
         url: `${BASE_URL}/users/${user.username}`,
         method: 'GET',
         timeout,
-        params: { token }
+        params: { token: user.loginToken }
       });
 
       let newUser = response.data.user;

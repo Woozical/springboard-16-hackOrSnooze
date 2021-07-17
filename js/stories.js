@@ -89,7 +89,13 @@ async function submitNewStory(e){
     // Update DOM
     $submitForm.trigger('reset');
     hidePageComponents();
-    putStoriesOnPage();
+    switch (storyDisplay){
+      case STATE.own:
+        putUserStoriesOnPage('ownStories');
+        break;
+      default:
+        putStoriesOnPage();
+    }
   } catch (err) {
     const $result = $('#submit-result');
     let code;
@@ -188,7 +194,7 @@ async function deleteStoryClick(e){
   try{
     await storyList.deleteStory(currentUser, storyId);
     storyList = await StoryList.getStories(); 
-    currentUser = await User.syncUserInfo(currentUser, currentUser.loginToken);
+    currentUser = await User.syncUserInfo(currentUser);
     $(`#${storyId}`).remove();
     if (storyDisplay === STATE.own && currentUser.ownStories.length === 0){
       const $notification = $(
@@ -231,7 +237,7 @@ function editStoryClick(e){
 }
 
 async function openEditForm(storyId){
-  const story = await Story.getData(storyId);
+  const story = storyList.stories[storyList.getStoryIndexById(storyId)];
   const form = $editForm.get()[0];
   $editForm.attr('data-editId', storyId);
   form.title.value = story.title;
@@ -251,14 +257,51 @@ async function submitEditForm(e){
     author : form.author.value,
     url :form.url.value,
   };
+
   try{
     const editedStory = await storyList.editStory(currentUser, storyId, storyData);
     const editIdx = storyList.getStoryIndexById(storyId);
+    const oldStory = storyList.stories[editIdx];
     storyList.stories[editIdx] = editedStory;
+    console.log(oldStory);
+    // Find and replace old story in local memory of owned stories
+    console.log('Searching owned')
+    const ownEditIdx = currentUser.ownStories.findIndex(
+      (story) => {
+        console.log(story.storyId, oldStory.storyId);
+        return (story.storyId === oldStory.storyId);
+      }
+    );
+    console.log('Index:', ownEditIdx);
+    currentUser.ownStories[ownEditIdx] = editedStory;
+
+    // Find and replace old story in local memory of favorited stories
+    if (oldStory.isFavoritedBy(currentUser)){
+      console.log('Searching favorited')
+      const favEditIdx = currentUser.favorites.findIndex(
+        (story) => {
+          console.log(story.storyId, oldStory.storyId);
+          return (story.storyId === oldStory.storyId);
+        }
+      );
+      console.log('Index:', favEditIdx);
+      currentUser.favorites[favEditIdx] = editedStory;
+    }
+
     // Update DOM
     $editForm.trigger('reset');
     hidePageComponents();
-    putStoriesOnPage();
+    switch (storyDisplay){
+      case STATE.fav:
+        putUserStoriesOnPage('favorites');
+        break;
+      case STATE.own:
+        putUserStoriesOnPage('ownStories');
+        break;
+      default:
+        putStoriesOnPage();
+    }
+    //Error Handling
   } catch (err) {
     const $result = $('#edit-result');
     let code;
